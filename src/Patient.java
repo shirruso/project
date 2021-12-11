@@ -34,5 +34,11 @@ public class Patient {
                 + ", smoking status= " + this.smoking_status + ", stroke= " + this.stroke + "]";
     }
 
+    public String getGender() {
+        return gender;
+    }
 
+    public int getAge() {
+        return age;
+    }
 }
