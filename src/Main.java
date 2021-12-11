@@ -1,5 +1,11 @@
+
+
+import javafx.util.Pair;
+
 import java.io.*;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Main {
     // holds all the equivalence classes that are induced by the current anonymization
@@ -25,6 +31,8 @@ public class Main {
             while ((line = br.readLine()) != null && counter > 0)   //returns a Boolean value
             {
                 String[] attributes = line.split(splitBy);    // use comma as separator
+                /*create the first equivalence class that contains all the records in the dataset,
+                 That is, the most generalized equivalence class*/
                 Patient patient = new Patient(attributes);
                 Pair<Patient, Tuple> pair = new Pair<>(patient, new Tuple());
                 most_general_ec.addTuple(pair);

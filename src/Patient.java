@@ -1,3 +1,6 @@
+/*
+This class represent a record in the data set
+ */
 public class Patient {
     private int id;
     private String gender;
