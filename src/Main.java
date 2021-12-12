@@ -2,6 +2,7 @@
 
 import javafx.util.Pair;
 
+import javax.lang.model.type.ArrayType;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,11 @@ public class Main {
     private static int[] mapValueToAttribute;
     // map each value of an attribute to a number
     private static Object[] mapValueToNumber;
+    private static int k;
+    private static int dataSetSize;
 
+
+    // do not forget to get k from input
     public static void main(String[] args) {
         EquivalenceClass most_general_ec = new EquivalenceClass();
         List<EquivalenceClass> equivalence_classes_list = new ArrayList<>();
@@ -95,9 +100,27 @@ public class Main {
         kOptimizeMain(k);
     }
 
-    public static List<Integer> pruneUselessValues(List<Integer> head, List<Integer> tail) {
-        for (Integer value : tail) {
+    public static int kOptimizeMain(int k){
+        List <Integer> sigmaAll = IntStream.range(0, 44)
+                .boxed()
+                .collect(Collectors.toList());
+        return KOptimize(k,best_anonymization,sigmaAll,Integer.MAX_VALUE);
 
+    }
+    public static int KOptimize(int k,Head head,List<Integer> tail,int bestCost){
+        List<Integer> newTail = pruneUselessValues(head,tail);
+        System.out.println(newTail);
+        return Integer.MAX_VALUE;
+    }
+    /*The purpose of the function is to prune all the tail values that induced equivalence classes that are smaller than k.
+        these values are called "useless values". */
+    public static List<Integer> pruneUselessValues(Head head, List<Integer> tail) {
+        List<Integer> new_tail = new ArrayList();
+        for (Integer value : tail) {
+            List<EquivalenceClass> new_equivalence_classes_list = updateEquivalenceClasses(head,value);
+            if (!isUselessValue(new_equivalence_classes_list)) {
+                new_tail.add(value);
+            }
         }
         return new_tail;
     }
