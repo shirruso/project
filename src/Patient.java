@@ -44,4 +44,40 @@ public class Patient {
     public int getAge() {
         return age;
     }
+
+    public boolean isHypertension() {
+        return hypertension;
+    }
+
+    public boolean isHeartDisease() {
+        return heart_disease;
+    }
+
+    public boolean isEverMarried() {
+        return ever_married;
+    }
+
+    public String getWorkType() {
+        return work_type;
+    }
+
+    public String getResidenceType() {
+        return residence_type;
+    }
+
+    public double getAvgGlucoseLevel() {
+        return avg_glucose_level;
+    }
+
+    public double getBmi() {
+        return bmi;
+    }
+
+    public String getSmokingStatus() {
+        return smoking_status;
+    }
+
+    public boolean isStroke() {
+        return stroke;
+    }
 }
