@@ -35,7 +35,7 @@ public class Main {
         try {
             //parsing a CSV file into BufferedReader class constructor
             BufferedReader br = new BufferedReader(new FileReader(".\\src\\healthcare-dataset-stroke-data.csv"));
-            int counter = 10;
+            int counter = 400;
             br.readLine();
             //parse data set
             while ((line = br.readLine()) != null && counter > 0)   //returns a Boolean value
@@ -48,7 +48,7 @@ public class Main {
                 most_general_ec.addTuple(pair);
                 dataSet.add(patient);
                 // delete *******
-                System.out.println(patient);
+                //System.out.println(patient);
                 counter--;
             }
         } catch (IOException e) {
@@ -98,8 +98,8 @@ public class Main {
                         10, 10, 10, 10,
                         11, 11};
 
-        k = 9;
-        dataSetSize = 10;
+        k = 5;
+        dataSetSize = 100;
         kOptimizeMain(k);
     }
 
@@ -112,14 +112,16 @@ public class Main {
     }
 
     public static int KOptimize(int k, Head head, List<Integer> tail, int bestCost) {
-        List<Integer> newTail = pruneUselessValues(head, tail);
-        System.out.println("the new tail is: " + newTail);
+        tail = pruneUselessValues(head, tail);
+        System.out.println("the new tail is: " + tail);
         int c_optional = computeCost(head);
         System.out.println("c optional is: " + c_optional);
         if (c_optional < bestCost) {
             best_anonymization = head;
             bestCost = c_optional;
         }
+        tail = prune(head, tail, bestCost);
+        System.out.println("The tail after prune:\n" + tail);
         return Integer.MAX_VALUE;
     }
 
@@ -141,7 +143,7 @@ public class Main {
 
     public static List<EquivalenceClass> updateEquivalenceClasses(Head head, List<Integer> values) {
         Head head_copy = new Head(head);
-        List<EquivalenceClass> new_equivalence_classes_list = null;
+        List<EquivalenceClass> new_equivalence_classes_list = new ArrayList<>();
         for (Integer value : values) {
             new_equivalence_classes_list = new ArrayList<>();
             for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
@@ -195,7 +197,7 @@ public class Main {
                     //check if this record is suppressed by H
                     if (ec_head.size() < k)
                         sum += dataSetSize;
-                    // the record is not suppressed by H
+                        // the record is not suppressed by H
                     else {
                         //find the equivalence class induced by the allset that contain patient
                         for (EquivalenceClass ec_allset : ec_list) {
@@ -206,9 +208,34 @@ public class Main {
                 }
             }
         }
+        //System.out.println(sum);
         return sum;
-
     }
+
+    public static List<Integer> prune(Head head, List<Integer> tail, int best_cost) {
+        if (computeLowerBound(head, tail) >= best_cost)
+            return new ArrayList<>();
+        List<Integer> new_tail = new ArrayList<>(tail);
+        System.out.println("tail : "+tail +"\n head: "+head.getAnonymization()+"\n");
+        for (Integer value : tail) {
+            List<Integer> value_list = new ArrayList<>();
+            value_list.add(value);
+            List<EquivalenceClass> new_ec_list = updateEquivalenceClasses(head, value_list);
+            List<Integer> new_anonymization = new ArrayList<>(head.getAnonymization());
+            new_anonymization.add(value);
+            Head new_head = new Head(new_anonymization, new_ec_list);
+            List<Integer> tail_without_value = new ArrayList<>(new_tail);
+            tail_without_value.remove(value);
+            if (prune(new_head, tail_without_value, best_cost).size() == 0)
+                new_tail = tail_without_value;
+        }
+        if (!new_tail.equals(tail)){
+            System.out.println("\nT_new not equal T , T_new: "+new_tail+"\ntail: "+tail);
+            return prune(head, new_tail, best_cost);
+        }
+        return new_tail;
+    }
+
 
 }
 
