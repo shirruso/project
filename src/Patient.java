@@ -1,3 +1,5 @@
+import javafx.util.Pair;
+
 /*
 This class represent a record in the data set
  */
@@ -28,6 +30,21 @@ public class Patient {
         this.bmi = Double.parseDouble(metadata[9]);
         this.smoking_status = metadata[10];
         this.stroke = metadata[11].equals("1");
+    }
+
+    public Patient(Patient other) {
+        this.id = other.id;
+        this.gender = new String(other.gender);
+        this.age = other.age;
+        this.hypertension = other.hypertension;
+        this.heart_disease = other.heart_disease;
+        this.ever_married = other.ever_married;
+        this.work_type = new String(other.work_type);
+        this.residence_type = new String(other.residence_type);
+        this.avg_glucose_level = other.avg_glucose_level;
+        this.bmi = other.bmi;
+        this.smoking_status = new String(other.smoking_status);
+        this.stroke = other.stroke;
     }
 
     public String toString() {

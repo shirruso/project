@@ -2,7 +2,6 @@
 
 import javafx.util.Pair;
 
-import javax.lang.model.type.ArrayType;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public class Main {
         EquivalenceClass most_general_ec = new EquivalenceClass();
         List<EquivalenceClass> equivalence_classes_list = new ArrayList<>();
         equivalence_classes_list.add(most_general_ec);
-        best_anonymization = new Head(new ArrayList<>(),equivalence_classes_list);
+        best_anonymization = new Head(new ArrayList<>(), equivalence_classes_list);
         String line = "";
         String splitBy = ",";
         try {
@@ -84,40 +83,50 @@ public class Main {
         // maps each value to its attribute
         mapValueToAttribute = new int[]
                 {1, 1,
-                2, 2, 2, 2, 2, 2, 2, 2, 2,
-                3, 3,
-                4, 4,
-                5, 5,
-                6, 6, 6, 6, 6,
-                7, 7,
-                8, 8, 8, 8, 8, 8, 8,
-                9, 9, 9, 9, 9, 9, 9,
-                10, 10, 10, 10,
-                11, 11};
+                        2, 2, 2, 2, 2, 2, 2, 2, 2,
+                        3, 3,
+                        4, 4,
+                        5, 5,
+                        6, 6, 6, 6, 6,
+                        7, 7,
+                        8, 8, 8, 8, 8, 8, 8,
+                        9, 9, 9, 9, 9, 9, 9,
+                        10, 10, 10, 10,
+                        11, 11};
 
-        k =9;
+        k = 9;
         dataSetSize = 10;
         kOptimizeMain(k);
     }
 
-    public static int kOptimizeMain(int k){
-        List <Integer> sigmaAll = IntStream.range(0, 44)
+    public static int kOptimizeMain(int k) {
+        List<Integer> sigmaAll = IntStream.range(0, 44)
                 .boxed()
                 .collect(Collectors.toList());
-        return KOptimize(k,best_anonymization,sigmaAll,Integer.MAX_VALUE);
+        return KOptimize(k, best_anonymization, sigmaAll, Integer.MAX_VALUE);
 
     }
-    public static int KOptimize(int k,Head head,List<Integer> tail,int bestCost){
-        List<Integer> newTail = pruneUselessValues(head,tail);
-        System.out.println(newTail);
+
+    public static int KOptimize(int k, Head head, List<Integer> tail, int bestCost) {
+        List<Integer> newTail = pruneUselessValues(head, tail);
+        System.out.println("the new tail is: " + newTail);
+        int c_optional = computeCost(head);
+        System.out.println("c optional is: " + c_optional);
+        if (c_optional < bestCost) {
+            best_anonymization = head;
+            bestCost = c_optional;
+        }
         return Integer.MAX_VALUE;
     }
+
     /*The purpose of the function is to prune all the tail values that induced equivalence classes that are smaller than k.
         these values are called "useless values". */
     public static List<Integer> pruneUselessValues(Head head, List<Integer> tail) {
         List<Integer> new_tail = new ArrayList();
         for (Integer value : tail) {
-            List<EquivalenceClass> new_equivalence_classes_list = updateEquivalenceClasses(head,value);
+            List<Integer> valueList = new ArrayList<>();
+            valueList.add(value);
+            List<EquivalenceClass> new_equivalence_classes_list = updateEquivalenceClasses(head, valueList);
             if (!isUselessValue(new_equivalence_classes_list)) {
                 new_tail.add(value);
             }
@@ -126,16 +135,22 @@ public class Main {
     }
     /* create a new equivalence classes list resulting from adding "value" to the current anonymization */
 
-    public static List<EquivalenceClass> updateEquivalenceClasses (Head head,int value){
-        List <EquivalenceClass> new_equivalence_classes_list= new ArrayList<>();
-        for(EquivalenceClass ec:head.getInducedEquivalenceClasses()){
-            Pair<EquivalenceClass,EquivalenceClass> induced_ec = ec.induceEC(value,mapValueToAttribute[value],mapValueToNumber);
-            if(induced_ec.getValue().equivalenceClassSize() > 0){
-                new_equivalence_classes_list.add(induced_ec.getValue());
+    public static List<EquivalenceClass> updateEquivalenceClasses(Head head, List<Integer> values) {
+        Head head_copy = new Head(head);
+        List<EquivalenceClass> new_equivalence_classes_list = null;
+        for (Integer value : values) {
+            new_equivalence_classes_list = new ArrayList<>();
+            for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
+                Pair<EquivalenceClass, EquivalenceClass> induced_ec = ec.induceEC(value, mapValueToAttribute[value], mapValueToNumber);
+                if (induced_ec.getValue().equivalenceClassSize() > 0) {
+                    new_equivalence_classes_list.add(induced_ec.getValue());
+                }
+                if (induced_ec.getKey().equivalenceClassSize() > 0) {
+                    new_equivalence_classes_list.add(induced_ec.getKey());
+                }
             }
-            if(induced_ec.getKey().equivalenceClassSize() > 0){
-                new_equivalence_classes_list.add(induced_ec.getKey());
-            }
+            head_copy.addValue(value);
+            head_copy.setEquivalenceClassList(new_equivalence_classes_list);
         }
         return new_equivalence_classes_list;
     }
@@ -143,15 +158,41 @@ public class Main {
        then "value" is called a useless value. Therefore, in this case the function return true, otherwise false.
     */
 
-    public static boolean isUselessValue (List<EquivalenceClass> ec_list){
-        for(EquivalenceClass ec : ec_list){
-            if(ec.equivalenceClassSize() > k)
+    public static boolean isUselessValue(List<EquivalenceClass> ec_list) {
+        for (EquivalenceClass ec : ec_list) {
+            if (ec.equivalenceClassSize() > k)
                 return false;
         }
         return true;
     }
 
+    public static int computeCost(Head head) {
+        int c = 0;
+        int ecSize;
+        for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
+            ecSize = ec.equivalenceClassSize();
+            if (ecSize >= k) {
+                c += ecSize * ecSize;
+            } else {
+                c += dataSetSize * ecSize;
+            }
+        }
+        return c;
+    }
 
+    public static int computeLowerBound(Head head, List<Integer> allset) {
+        int sum = 0;
+        int ecSize;
+        for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
+            ecSize = ec.equivalenceClassSize();
+            if (ecSize < k) {
+                sum += dataSetSize * ecSize;
+            }
+
+        }
+        return sum;
+
+    }
 
 }
 

@@ -14,6 +14,14 @@ public class EquivalenceClass {
         tuple_list = new ArrayList<>();
     }
 
+    public EquivalenceClass(EquivalenceClass ec) {
+        this.tuple_list = new ArrayList<>();
+        for (Pair<Patient, Tuple> tuple : tuple_list) {
+            Pair<Patient, Tuple> pair = new Pair<>(new Patient(tuple.getKey()), new Tuple(tuple.getValue()));
+            this.tuple_list.add(pair);
+        }
+    }
+
     public void addTuple(Pair<Patient, Tuple> tuple) {
         this.tuple_list.add(tuple);
     }
@@ -34,8 +42,8 @@ public class EquivalenceClass {
                     condition = tuple.getKey().getGender().equals((String) mapValueToNumber[value]);
                     break;
                 case 2://age
-                    condition = tuple.getKey().getAge() >= (double)((((Pair<Integer,Integer>)(mapValueToNumber[value])).getKey()).intValue())
-                            && tuple.getKey().getAge() <= (double)((((Pair<Integer,Integer>)(mapValueToNumber[value])).getValue()).intValue());
+                    condition = tuple.getKey().getAge() >= (double) ((((Pair<Integer, Integer>) (mapValueToNumber[value])).getKey()).intValue())
+                            && tuple.getKey().getAge() <= (double) ((((Pair<Integer, Integer>) (mapValueToNumber[value])).getValue()).intValue());
                     break;
                 case 3://hypertension
                     condition = tuple.getKey().isHypertension() == (Boolean) mapValueToNumber[value];
@@ -53,12 +61,12 @@ public class EquivalenceClass {
                     condition = tuple.getKey().getResidenceType().equals((String) mapValueToNumber[value]);
                     break;
                 case 8: //avg glucose level
-                    condition = tuple.getKey().getAvgGlucoseLevel() >= (double)((((Pair<Integer,Integer>)(mapValueToNumber[value])).getKey()).intValue())
-                            && tuple.getKey().getAvgGlucoseLevel() <= (double)((((Pair<Integer,Integer>)(mapValueToNumber[value])).getValue()).intValue());
+                    condition = tuple.getKey().getAvgGlucoseLevel() >= (double) ((((Pair<Integer, Integer>) (mapValueToNumber[value])).getKey()).intValue())
+                            && tuple.getKey().getAvgGlucoseLevel() <= (double) ((((Pair<Integer, Integer>) (mapValueToNumber[value])).getValue()).intValue());
                     break;
                 case 9: //bmi
-                    condition = tuple.getKey().getBmi() >= (double)((((Pair<Integer,Integer>)(mapValueToNumber[value])).getKey()).intValue())
-                            && tuple.getKey().getBmi() <= (double)((((Pair<Integer,Integer>)(mapValueToNumber[value])).getValue()).intValue());
+                    condition = tuple.getKey().getBmi() >= (double) ((((Pair<Integer, Integer>) (mapValueToNumber[value])).getKey()).intValue())
+                            && tuple.getKey().getBmi() <= (double) ((((Pair<Integer, Integer>) (mapValueToNumber[value])).getValue()).intValue());
                     break;
                 case 10: //smoking status
                     condition = tuple.getKey().getSmokingStatus().equals((String) mapValueToNumber[value]);
