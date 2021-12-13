@@ -89,7 +89,15 @@ public class EquivalenceClass {
         }
     }
 
-    public int equivalenceClassSize() {
+    public boolean containsPatient (Patient patient){
+        for(Pair<Patient,Tuple> tuple: this.tuple_list){
+            if(tuple.getKey().equals(patient))
+                return true;
+        }
+        return false;
+    }
+
+    public int size() {
         return this.tuple_list.size();
     }
 }

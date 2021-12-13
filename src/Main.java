@@ -20,10 +20,12 @@ public class Main {
     private static Object[] mapValueToNumber;
     private static int k;
     private static int dataSetSize;
+    private static List<Patient> dataSet;
 
 
     // do not forget to get k from input
     public static void main(String[] args) {
+        dataSet = new ArrayList<>();
         EquivalenceClass most_general_ec = new EquivalenceClass();
         List<EquivalenceClass> equivalence_classes_list = new ArrayList<>();
         equivalence_classes_list.add(most_general_ec);
@@ -44,6 +46,8 @@ public class Main {
                 Patient patient = new Patient(attributes);
                 Pair<Patient, Tuple> pair = new Pair<>(patient, new Tuple());
                 most_general_ec.addTuple(pair);
+                dataSet.add(patient);
+                // delete *******
                 System.out.println(patient);
                 counter--;
             }
@@ -142,10 +146,10 @@ public class Main {
             new_equivalence_classes_list = new ArrayList<>();
             for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
                 Pair<EquivalenceClass, EquivalenceClass> induced_ec = ec.induceEC(value, mapValueToAttribute[value], mapValueToNumber);
-                if (induced_ec.getValue().equivalenceClassSize() > 0) {
+                if (induced_ec.getValue().size() > 0) {
                     new_equivalence_classes_list.add(induced_ec.getValue());
                 }
-                if (induced_ec.getKey().equivalenceClassSize() > 0) {
+                if (induced_ec.getKey().size() > 0) {
                     new_equivalence_classes_list.add(induced_ec.getKey());
                 }
             }
@@ -160,7 +164,7 @@ public class Main {
 
     public static boolean isUselessValue(List<EquivalenceClass> ec_list) {
         for (EquivalenceClass ec : ec_list) {
-            if (ec.equivalenceClassSize() > k)
+            if (ec.size() > k)
                 return false;
         }
         return true;
@@ -170,7 +174,7 @@ public class Main {
         int c = 0;
         int ecSize;
         for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
-            ecSize = ec.equivalenceClassSize();
+            ecSize = ec.size();
             if (ecSize >= k) {
                 c += ecSize * ecSize;
             } else {
@@ -180,15 +184,27 @@ public class Main {
         return c;
     }
 
-    public static int computeLowerBound(Head head, List<Integer> allset) {
+    public static int computeLowerBound(Head head, List<Integer> tail) {
         int sum = 0;
-        int ecSize;
-        for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
-            ecSize = ec.equivalenceClassSize();
-            if (ecSize < k) {
-                sum += dataSetSize * ecSize;
+        //list of all equivalence classes induced by allset A (union of head and tail)
+        List<EquivalenceClass> ec_list = updateEquivalenceClasses(head, tail);
+        for (Patient patient : dataSet) {
+            for (EquivalenceClass ec_head : head.getInducedEquivalenceClasses()) {
+                //find the equivalence class induced by head that contain patient
+                if (ec_head.containsPatient(patient)) {
+                    //check if this record is suppressed by H
+                    if (ec_head.size() < k)
+                        sum += dataSetSize;
+                    // the record is not suppressed by H
+                    else {
+                        //find the equivalence class induced by the allset that contain patient
+                        for (EquivalenceClass ec_allset : ec_list) {
+                            if (ec_allset.containsPatient(patient))
+                                sum += Math.max(ec_allset.size(), k);
+                        }
+                    }
+                }
             }
-
         }
         return sum;
 

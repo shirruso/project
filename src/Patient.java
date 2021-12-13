@@ -54,6 +54,13 @@ public class Patient {
                 + ", smoking status= " + this.smoking_status + ", stroke= " + this.stroke + "]";
     }
 
+    public boolean equals(Patient other) {
+        return this.id == other.id && this.gender.equals(other.gender) && this.age == other.age && this.hypertension == other.hypertension
+                && this.heart_disease == other.heart_disease && this.ever_married == other.ever_married && this.work_type.equals(other.work_type)
+                && this.residence_type.equals(other.residence_type) && this.avg_glucose_level == other.avg_glucose_level && this.bmi == other.bmi
+                && this.smoking_status.equals(other.smoking_status) && this.stroke == other.stroke;
+    }
+
     public String getGender() {
         return gender;
     }
