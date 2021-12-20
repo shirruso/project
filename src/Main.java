@@ -35,7 +35,7 @@ public class Main {
         try {
             //parsing a CSV file into BufferedReader class constructor
             BufferedReader br = new BufferedReader(new FileReader(".\\src\\healthcare-dataset-stroke-data.csv"));
-            int counter = 400;
+            int counter = 100;
             br.readLine();
             //parse data set
             while ((line = br.readLine()) != null && counter > 0)   //returns a Boolean value
@@ -98,7 +98,7 @@ public class Main {
                         10, 10, 10, 10,
                         11, 11};
 
-        k = 5;
+        k = 80;
         dataSetSize = 100;
         kOptimizeMain(k);
     }
@@ -142,11 +142,11 @@ public class Main {
     /* create a new equivalence classes list resulting from adding "value" to the current anonymization */
 
     public static List<EquivalenceClass> updateEquivalenceClasses(Head head, List<Integer> values) {
-        Head head_copy = new Head(head);
+        Head head_copy = new Head(new ArrayList<Integer>(head.getAnonymization()),head.getInducedEquivalenceClasses());
         List<EquivalenceClass> new_equivalence_classes_list = new ArrayList<>();
         for (Integer value : values) {
             new_equivalence_classes_list = new ArrayList<>();
-            for (EquivalenceClass ec : head.getInducedEquivalenceClasses()) {
+            for (EquivalenceClass ec : head_copy.getInducedEquivalenceClasses()) {
                 Pair<EquivalenceClass, EquivalenceClass> induced_ec = ec.induceEC(value, mapValueToAttribute[value], mapValueToNumber);
                 if (induced_ec.getValue().size() > 0) {
                     new_equivalence_classes_list.add(induced_ec.getValue());
@@ -156,7 +156,8 @@ public class Main {
                 }
             }
             head_copy.addValue(value);
-            head_copy.setEquivalenceClassList(new_equivalence_classes_list);
+            List <EquivalenceClass> new_ec_copy = new ArrayList<>(new_equivalence_classes_list);
+            head_copy.setEquivalenceClassList(new_ec_copy);
         }
         return new_equivalence_classes_list;
     }
@@ -166,7 +167,7 @@ public class Main {
 
     public static boolean isUselessValue(List<EquivalenceClass> ec_list) {
         for (EquivalenceClass ec : ec_list) {
-            if (ec.size() > k)
+            if (ec.size() >= k)
                 return false;
         }
         return true;
@@ -212,6 +213,10 @@ public class Main {
         return sum;
     }
 
+    /*
+    this function creates and returns a new tail set by removing values from T that can not
+    lead to anonymization with cost lower than best_cost
+     */
     public static List<Integer> prune(Head head, List<Integer> tail, int best_cost) {
         if (computeLowerBound(head, tail) >= best_cost)
             return new ArrayList<>();

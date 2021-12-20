@@ -16,7 +16,7 @@ public class EquivalenceClass {
 
     public EquivalenceClass(EquivalenceClass ec) {
         this.tuple_list = new ArrayList<>();
-        for (Pair<Patient, Tuple> tuple : tuple_list) {
+        for (Pair<Patient, Tuple> tuple : ec.tuple_list) {
             Pair<Patient, Tuple> pair = new Pair<>(new Patient(tuple.getKey()), new Tuple(tuple.getValue()));
             this.tuple_list.add(pair);
         }
