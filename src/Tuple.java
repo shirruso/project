@@ -14,12 +14,14 @@ public class Tuple {
          4         heart disease
          5         ever married
          6         work type
-         7         avg glucose level
-         8         bmi
-        9         smoking status
+         7          residence type
+         8         avg glucose level
+         9         bmi
+        10         smoking status
+        11         stroke
      */
     public Tuple() {
-        record = new Object[]{"*", "A", "B", "C", "D", "E", "F", "G", "H", "I"};
+        record = new Object[]{"*", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"};
     }
 
     public Tuple(Tuple tuple){

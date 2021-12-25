@@ -4,6 +4,7 @@ import javafx.util.Pair;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -35,7 +36,7 @@ public class Main {
         try {
             //parsing a CSV file into BufferedReader class constructor
             BufferedReader br = new BufferedReader(new FileReader(".\\src\\healthcare-dataset-stroke-data.csv"));
-            int counter = 3;
+            int counter = 10;
             br.readLine();
             //parse data set
             while ((line = br.readLine()) != null && counter > 0)   //returns a Boolean value
@@ -58,44 +59,55 @@ public class Main {
         /*
            Indexes    |  Attribute
              0 - 1        gender
-             2 - 4       age
-             5 - 6       hypertension
-             7 - 8       heart disease
-            9 - 10       ever married
-            11 - 15       work type
-            16 - 18       avg glucose level
-            19 - 21       bmi
-            22 - 25       smoking status
+              2 - 10       age
+            11 - 12       hypertension
+            13 - 14       heart disease
+            15 - 16       ever married
+            17 - 21       work type
+            22 - 23       residence type
+            24 - 30       avg glucose level
+            31 - 37       bmi
+            38 - 41       smoking status
+            42 - 43       stroke
 
          */
         mapValueToNumber = new Object[]{"Male", "Female"
-                , new Pair<>(0, 27), new Pair<>(28, 55), new Pair<>(56, 82)
+                , new Pair<>(0, 9), new Pair<>(1, 9), new Pair<>(10, 19), new Pair<>(20, 29), new Pair<>(30, 39)
+                , new Pair<>(40, 49), new Pair<>(50, 59), new Pair<>(60, 69), new Pair<>(70, 82)
                 , true, false
                 , true, false
                 , true, false
                 , "children", "Govt_jov", "Never_worked", "Private", "Self-employed"
-                , new Pair<>(55, 127), new Pair<>(128, 200), new Pair<>(201, 272)
-                , new Pair<>(10, 39), new Pair<>(40, 69), new Pair<>(70, 98)
-                , "formerly smoked", "never smoked", "smokes", "Unknown"};
+                , "Rural", "Urban"
+                , new Pair<>(55, 85), new Pair<>(86, 116), new Pair<>(117, 147), new Pair<>(148, 178), new Pair<>(179, 209)
+                , new Pair<>(210, 240), new Pair<>(241, 272)
+                , new Pair<>(10, 20), new Pair<>(21, 31), new Pair<>(32, 42), new Pair<>(43, 53), new Pair<>(64, 74)
+                , new Pair<>(75, 85), new Pair<>(86, 98)
+                , "formerly smoked", "never smoked", "smokes", "Unknown"
+                , true, false};
         // maps each value to its attribute
         mapValueToAttribute = new int[]
                 {1, 1,
-                        2, 2, 2,
+                        2, 2, 2, 2, 2, 2, 2, 2, 2,
                         3, 3,
                         4, 4,
                         5, 5,
                         6, 6, 6, 6, 6,
-                        7, 7, 7,
-                        8, 8, 8,
-                        9, 9, 9, 9};
+                        7, 7,
+                        8, 8, 8, 8, 8, 8, 8,
+                        9, 9, 9, 9, 9, 9, 9,
+                        10, 10, 10, 10,
+                        11, 11};
 
-        k = 2;
-        dataSetSize = 3;
-        kOptimizeMain(k);
+
+        k = 3;
+        dataSetSize = 10;
+        System.out.println(kOptimizeMain(k));
+
     }
 
     public static int kOptimizeMain(int k) {
-        List<Integer> sigmaAll = IntStream.range(0, mapValueToAttribute.length)
+        List<Integer> sigmaAll = IntStream.range(0, 44)
                 .boxed()
                 .collect(Collectors.toList());
         return KOptimize(k, best_anonymization, sigmaAll, Integer.MAX_VALUE);
@@ -111,9 +123,23 @@ public class Main {
             best_anonymization = head;
             bestCost = c_optional;
         }
-        tail = prune(head, tail, bestCost);
+        tail = mainPrune2(head, tail, bestCost);
         System.out.println("The tail after prune:\n" + tail);
-        return Integer.MAX_VALUE;
+        tail = reorderTail(head,tail);
+        System.out.println("The tail after reorder:\n" + tail);
+        while (tail.size()> 0){
+            int value = tail.remove(0);
+            List<Integer> value_list = new ArrayList<>();
+            value_list.add(value);
+            List<EquivalenceClass> new_ec_list = updateEquivalenceClasses(head, value_list);
+            List<Integer> new_anonymization = new ArrayList<>(head.getAnonymization());
+            new_anonymization.add(value);
+            Head new_head = new Head(new_anonymization, new_ec_list);
+            bestCost = KOptimize(k,new_head,tail,bestCost);
+            tail = mainPrune2(head, tail, bestCost);
+
+        }
+        return bestCost;
     }
 
     /*The purpose of the function is to prune all the tail values that induced equivalence classes that are smaller than k.
@@ -158,10 +184,10 @@ public class Main {
 
     public static boolean isUselessValue(List<EquivalenceClass> ec_list) {
         for (EquivalenceClass ec : ec_list) {
-            if (ec.size() >= k)
-                return false;
+            if (ec.size() < k)
+                return true;
         }
-        return true;
+        return false;
     }
 
     public static int computeCost(Head head) {
@@ -203,6 +229,33 @@ public class Main {
         //System.out.println(sum);
         return sum;
     }
+    public static List<Integer> mainPrune2 (Head head,List<Integer> tail, int best_cost){
+        List<Integer> head_and_tail = prune2(head, tail,best_cost);
+        List <Integer> head_and_tail_copy = new ArrayList<>(head_and_tail);
+        for(Integer value:head.getAnonymization()){
+            if(head_and_tail_copy.contains(value)){
+                head_and_tail_copy.remove(value);
+            }
+        }
+        return head_and_tail_copy;
+    }
+    public static List<Integer> prune2(Head head, List<Integer> tail, int best_cost) {
+        if(tail.size() ==0){
+            return head.getAnonymization();
+        }
+        List<Integer> value_list = new ArrayList<>();
+        int value = tail.remove(0);
+        value_list.add(value);
+        List<EquivalenceClass> new_ec_list = updateEquivalenceClasses(head, value_list);
+        List<Integer> new_anonymization = new ArrayList<>(head.getAnonymization());
+        new_anonymization.add(value);
+        Head new_head = new Head(new_anonymization, new_ec_list);
+        if(computeLowerBound(new_head,tail)>= best_cost){
+            return prune2(head,tail,best_cost);
+        }
+        return prune2(new_head,tail,best_cost);
+    }
+
 
     /*
     this function creates and returns a new tail set by removing values from T that can not
@@ -210,9 +263,9 @@ public class Main {
      */
     public static List<Integer> prune(Head head, List<Integer> tail, int best_cost) {
         if (computeLowerBound(head, tail) >= best_cost)
-            return null;
+            return new ArrayList<>();
         List<Integer> new_tail = new ArrayList<>(tail);
-        System.out.println("tail : "+tail +"\n head: "+head.getAnonymization()+"\n");
+        //System.out.println("tail : "+tail +"\n head: "+head.getAnonymization()+"\n");
         for (Integer value : tail) {
             List<Integer> value_list = new ArrayList<>();
             value_list.add(value);
@@ -222,15 +275,45 @@ public class Main {
             Head new_head = new Head(new_anonymization, new_ec_list);
             List<Integer> tail_without_value = new ArrayList<>(new_tail);
             tail_without_value.remove(value);
-            if (prune(new_head, tail_without_value, best_cost) == null)
+            if (prune(new_head, tail_without_value, best_cost).size() == 0){
+                if(tail.equals(IntStream.range(0, mapValueToAttribute.length)
+                        .boxed()
+                        .collect(Collectors.toList()))){
+                    System.out.println("main tail remove a value");
+                }
                 new_tail = tail_without_value;
+            }
         }
         if (!new_tail.equals(tail)){
-            System.out.println("\nT_new not equal T , T_new: "+new_tail+"\ntail: "+tail);
+            //System.out.println("\nhead: "+head.getAnonymization()+ " T_new not equal T , T_new: "+new_tail+" tail: "+tail);
             return prune(head, new_tail, best_cost);
         }
         return new_tail;
     }
+    public static List<Integer> reorderTail(Head head, List<Integer> tail){
+        List<Integer> new_tail = new ArrayList<>();
+        List<Pair<Integer,Integer>> s = new ArrayList<>();
+        for(Integer value: tail){
+            int counter = countSplitting (head, value);
+            s.add(new Pair<>(value,counter));
+        }
+        s.sort(Comparator.comparingInt(Pair::getValue));
+        for(Pair<Integer,Integer> pair: s){
+            new_tail.add(pair.getKey());
+        }
+        return new_tail;
+
+
+    }
+
+    public static int countSplitting (Head head,int value){
+        List<Integer> value_list = new ArrayList<>();
+        value_list.add(value);
+        List<EquivalenceClass> new_ec_list = updateEquivalenceClasses(head, value_list);
+        return new_ec_list.size() - head.getInducedEquivalenceClasses().size();
+    }
+
+
 
 
 }
