@@ -35,7 +35,7 @@ public class Main {
         try {
             //parsing a CSV file into BufferedReader class constructor
             BufferedReader br = new BufferedReader(new FileReader(".\\src\\healthcare-dataset-stroke-data.csv"));
-            int counter = 100;
+            int counter = 3;
             br.readLine();
             //parse data set
             while ((line = br.readLine()) != null && counter > 0)   //returns a Boolean value
@@ -58,53 +58,44 @@ public class Main {
         /*
            Indexes    |  Attribute
              0 - 1        gender
-             2 - 10       age
-            11 - 12       hypertension
-            13 - 14       heart disease
-            15 - 16       ever married
-            17 - 21       work type
-            22 - 23       residence type
-            24 - 30       avg glucose level
-            31 - 37       bmi
-            38 - 41       smoking status
-            42 - 43       stroke
+             2 - 4       age
+             5 - 6       hypertension
+             7 - 8       heart disease
+            9 - 10       ever married
+            11 - 15       work type
+            16 - 18       avg glucose level
+            19 - 21       bmi
+            22 - 25       smoking status
 
          */
         mapValueToNumber = new Object[]{"Male", "Female"
-                , new Pair<>(0, 9), new Pair<>(1, 9), new Pair<>(10, 19), new Pair<>(20, 29), new Pair<>(30, 39)
-                , new Pair<>(40, 49), new Pair<>(50, 59), new Pair<>(60, 69), new Pair<>(70, 82)
+                , new Pair<>(0, 27), new Pair<>(28, 55), new Pair<>(56, 82)
                 , true, false
                 , true, false
                 , true, false
                 , "children", "Govt_jov", "Never_worked", "Private", "Self-employed"
-                , "Rural", "Urban"
-                , new Pair<>(55, 85), new Pair<>(86, 116), new Pair<>(117, 147), new Pair<>(148, 178), new Pair<>(179, 209)
-                , new Pair<>(210, 240), new Pair<>(241, 272)
-                , new Pair<>(10, 20), new Pair<>(21, 31), new Pair<>(32, 42), new Pair<>(43, 53), new Pair<>(64, 74)
-                , new Pair<>(75, 85), new Pair<>(86, 98)
-                , "formerly smoked", "never smoked", "smokes", "Unknown"
-                , true, false};
+                , new Pair<>(55, 127), new Pair<>(128, 200), new Pair<>(201, 272)
+                , new Pair<>(10, 39), new Pair<>(40, 69), new Pair<>(70, 98)
+                , "formerly smoked", "never smoked", "smokes", "Unknown"};
         // maps each value to its attribute
         mapValueToAttribute = new int[]
                 {1, 1,
-                        2, 2, 2, 2, 2, 2, 2, 2, 2,
+                        2, 2, 2,
                         3, 3,
                         4, 4,
                         5, 5,
                         6, 6, 6, 6, 6,
-                        7, 7,
-                        8, 8, 8, 8, 8, 8, 8,
-                        9, 9, 9, 9, 9, 9, 9,
-                        10, 10, 10, 10,
-                        11, 11};
+                        7, 7, 7,
+                        8, 8, 8,
+                        9, 9, 9, 9};
 
-        k = 80;
-        dataSetSize = 100;
+        k = 2;
+        dataSetSize = 3;
         kOptimizeMain(k);
     }
 
     public static int kOptimizeMain(int k) {
-        List<Integer> sigmaAll = IntStream.range(0, 44)
+        List<Integer> sigmaAll = IntStream.range(0, mapValueToAttribute.length)
                 .boxed()
                 .collect(Collectors.toList());
         return KOptimize(k, best_anonymization, sigmaAll, Integer.MAX_VALUE);
@@ -219,7 +210,7 @@ public class Main {
      */
     public static List<Integer> prune(Head head, List<Integer> tail, int best_cost) {
         if (computeLowerBound(head, tail) >= best_cost)
-            return new ArrayList<>();
+            return null;
         List<Integer> new_tail = new ArrayList<>(tail);
         System.out.println("tail : "+tail +"\n head: "+head.getAnonymization()+"\n");
         for (Integer value : tail) {
@@ -231,7 +222,7 @@ public class Main {
             Head new_head = new Head(new_anonymization, new_ec_list);
             List<Integer> tail_without_value = new ArrayList<>(new_tail);
             tail_without_value.remove(value);
-            if (prune(new_head, tail_without_value, best_cost).size() == 0)
+            if (prune(new_head, tail_without_value, best_cost) == null)
                 new_tail = tail_without_value;
         }
         if (!new_tail.equals(tail)){
