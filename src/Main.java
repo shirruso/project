@@ -1,5 +1,6 @@
 
 
+import com.opencsv.CSVWriter;
 import javafx.util.Pair;
 
 import java.io.*;
@@ -9,6 +10,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+
 
 
 public class Main {
@@ -151,7 +154,7 @@ public class Main {
     /*The purpose of the function is to prune all the tail values that induced equivalence classes that are smaller than k.
         these values are called "useless values". */
     public static List<Integer> pruneUselessValues(Head head, List<Integer> tail) {
-        List<Integer> new_tail = new ArrayList();
+        List<Integer> new_tail = new ArrayList<>();
         for (Integer value : tail) {
             List<Integer> valueList = new ArrayList<>();
             valueList.add(value);
@@ -165,7 +168,7 @@ public class Main {
 
     /* create a new equivalence classes list resulting from adding "value" to the current anonymization */
     public static List<EquivalenceClass> updateEquivalenceClasses(Head head, List<Integer> values) {
-        Head head_copy = new Head(new ArrayList<Integer>(head.getAnonymization()), head.getInducedEquivalenceClasses());
+        Head head_copy = new Head(new ArrayList<>(head.getAnonymization()), head.getInducedEquivalenceClasses());
         List<EquivalenceClass> new_equivalence_classes_list = new ArrayList<>();
         for (Integer value : values) {
             new_equivalence_classes_list = new ArrayList<>();
@@ -218,7 +221,7 @@ public class Main {
 
     public static int computeLowerBound(Head head, List<Integer> tail) {
         int sum = 0;
-        //list of all equivalence classes induced by allset A (union of head and tail)
+        //list of all equivalence classes induced by all_set A (union of head and tail)
         List<EquivalenceClass> ec_list = updateEquivalenceClasses(head, tail);
         for (Patient patient : dataSet) {
             for (EquivalenceClass ec_head : head.getInducedEquivalenceClasses()) {
@@ -229,10 +232,10 @@ public class Main {
                         sum += dataSetSize;
                         // the record is not suppressed by H
                     else {
-                        //find the equivalence class induced by the allset that contain patient
-                        for (EquivalenceClass ec_allset : ec_list) {
-                            if (ec_allset.containsPatient(patient))
-                                sum += Math.max(ec_allset.size(), k);
+                        //find the equivalence class induced by the all_set that contain patient
+                        for (EquivalenceClass ec_all_set : ec_list) {
+                            if (ec_all_set.containsPatient(patient))
+                                sum += Math.max(ec_all_set.size(), k);
                         }
                     }
                 }
@@ -294,6 +297,39 @@ public class Main {
         List<EquivalenceClass> new_ec_list = updateEquivalenceClasses(head, value_list);
         return new_ec_list.size() - head.getInducedEquivalenceClasses().size();
     }
+
+    public static void writeDataLineByLine(String filePath)
+    {
+        // first create file object for file placed at location
+        // specified by filepath
+        File file = new File(filePath);
+        try {
+            // create FileWriter object with file as parameter
+            FileWriter outputfile = new FileWriter(file);
+
+            // create CSVWriter object filewriter object as parameter
+            CSVWriter writer = new CSVWriter(outputfile);
+
+            // adding header to csv
+            String[] header = { "Name", "Class", "Marks" };
+            writer.writeNext(header);
+
+            // add data to csv
+            String[] data1 = { "Aman", "10", "620" };
+            writer.writeNext(data1);
+            String[] data2 = { "Suraj", "10", "630" };
+            writer.writeNext(data2);
+
+            // closing writer connection
+            writer.close();
+        }
+        catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+
 
 
 }
