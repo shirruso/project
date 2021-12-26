@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
-
-
 public class Main {
     // holds all the equivalence classes that are induced by the current anonymization
     //private static List<EquivalenceClass> equivalence_classes_list = new ArrayList<>();
@@ -84,7 +82,7 @@ public class Main {
                 , true, false
                 , true, false
                 , true, false
-                , "children", "Govt_jov", "Never_worked", "Private", "Self-employed"
+                , "children", "Govt_job", "Never_worked", "Private", "Self-employed"
                 , "Rural", "Urban"
                 , new Pair<>(55, 127), new Pair<>(128, 200), new Pair<>(201, 272)
                 , new Pair<>(10, 39), new Pair<>(40, 69), new Pair<>(70, 98)
@@ -104,7 +102,9 @@ public class Main {
                         10, 10, 10, 10,
                         11, 11};
 
-        System.out.println(kOptimizeMain(k));
+        kOptimizeMain(k);
+        anonymizationToStringArray();
+        writeDataLineByLine(".\\src\\output.csv");
 
     }
 
@@ -298,8 +298,7 @@ public class Main {
         return new_ec_list.size() - head.getInducedEquivalenceClasses().size();
     }
 
-    public static void writeDataLineByLine(String filePath)
-    {
+    public static void writeDataLineByLine(String filePath) {
         // first create file object for file placed at location
         // specified by filepath
         File file = new File(filePath);
@@ -311,25 +310,76 @@ public class Main {
             CSVWriter writer = new CSVWriter(outputfile);
 
             // adding header to csv
-            String[] header = { "Name", "Class", "Marks" };
+            String[] header = {"id", "gender", "age", "hypertension", "heart disease", "ever married", "work type", "residence type", "avg glucose level", "bmi", "smoking status", "stroke"};
             writer.writeNext(header);
-
-            // add data to csv
-            String[] data1 = { "Aman", "10", "620" };
-            writer.writeNext(data1);
-            String[] data2 = { "Suraj", "10", "630" };
-            writer.writeNext(data2);
+            for (EquivalenceClass ec : best_anonymization.getInducedEquivalenceClasses()) {
+                Tuple t = ec.getTuple_list().get(0).getValue();
+                writer.writeNext(t.toStringArray(mapValueToNumber));
+                for (Pair<Patient, Tuple> tuple : ec.getTuple_list()) {
+                    Patient patient = tuple.getKey();
+                    writer.writeNext(patient.toStringArray());
+                }
+                writer.writeNext(new String[0]);
+            }
 
             // closing writer connection
             writer.close();
-        }
-        catch (IOException e) {
-            // TODO Auto-generated catch block
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /*
+               Indexes    |  Attribute
+             0 - 1        gender
+              2 - 10       age
+            11 - 12       hypertension
+            13 - 14       heart disease
+            15 - 16       ever married
+            17 - 21       work type
+            22 - 23       residence type
+            24 - 30       avg glucose level
+            31 - 37       bmi
+            38 - 41       smoking status
+            42 - 43       stroke
+     */
+    private static void anonymizationToStringArray() {
+        System.out.println("\nThe anonymization is:");
+        for (Integer val : best_anonymization.getAnonymization()) {
+            if (val >= 0 && val <= 1) {
+                System.out.println("gender: " + mapValueToNumber[val]);
+            } else if (val >= 2 && val <= 4) {
+                Pair<Integer, Integer> pair = (Pair<Integer, Integer>) mapValueToNumber[val];
+                System.out.println("age: [" + pair.getKey() + " , " + pair.getValue() + "]");
+            } else if (val >= 5 && val <= 6) {
+                System.out.println("hypertension: " + booleanToString((Boolean) mapValueToNumber[val]));
+            } else if (val >= 7 && val <= 8) {
+                System.out.println("heart disease: " + booleanToString((Boolean) mapValueToNumber[val]));
+            } else if (val >= 9 && val <= 10) {
+                System.out.println("ever married: " + booleanToString((Boolean) mapValueToNumber[val]));
+            } else if (val >= 11 && val <= 15) {
+                System.out.println("work type: " + mapValueToNumber[val]);
+            } else if (val >= 16 && val <= 17) {
+                System.out.println("residence type: " + mapValueToNumber[val]);
+            } else if (val >= 18 && val <= 20) {
+                Pair<Integer, Integer> pair = (Pair<Integer, Integer>) mapValueToNumber[val];
+                System.out.println("avg glucose level: [" + pair.getKey() + " , " + pair.getValue() + "]");
+            } else if (val >= 21 && val <= 23) {
+                Pair<Integer, Integer> pair = (Pair<Integer, Integer>) mapValueToNumber[val];
+                System.out.println("bmi: [" + pair.getKey() + " , " + pair.getValue() + "]");
+            } else if (val >= 24 && val <= 27) {
+                System.out.println("smoking status: " + mapValueToNumber[val]);
+            } else {
+                System.out.println("stroke: " + booleanToString((Boolean) mapValueToNumber[val]));
+            }
+        }
+    }
 
+    private static String booleanToString(boolean bool) {
+        if (bool)
+            return "1";
+        return "0";
+    }
 
 
 }

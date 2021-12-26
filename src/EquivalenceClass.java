@@ -100,4 +100,8 @@ public class EquivalenceClass {
     public int size() {
         return this.tuple_list.size();
     }
+
+    public List<Pair<Patient, Tuple>> getTuple_list() {
+        return tuple_list;
+    }
 }

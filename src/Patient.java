@@ -23,7 +23,7 @@ public class Patient {
         this.age = Double.parseDouble(metadata[2]);
         this.hypertension = metadata[3].equals("1");
         this.heart_disease = metadata[4].equals("1");
-        this.ever_married = metadata[5].equals("1");
+        this.ever_married = metadata[5].equals("Yes");
         this.work_type = metadata[6];
         this.residence_type = metadata[7];
         this.avg_glucose_level = Double.parseDouble(metadata[8]);
@@ -52,6 +52,18 @@ public class Patient {
                 + ", heart disease= " + this.heart_disease + ", ever married= " + this.ever_married + ", work type= " + work_type
                 + ", residence type= " + this.residence_type +  ", avg glucose level= " + this.avg_glucose_level + ", bmi= " + this.bmi
                 + ", smoking status= " + this.smoking_status + ", stroke= " + this.stroke + "]";
+    }
+
+    public String[] toStringArray(){
+        return new String[]{Integer.toString(id),gender,Double.toString(age),booleanToString(hypertension), booleanToString(heart_disease)
+                             ,booleanToString(ever_married),work_type,residence_type,Double.toString(avg_glucose_level)
+                             ,Double.toString(bmi),smoking_status,booleanToString(stroke)};
+    }
+
+    public String booleanToString(boolean bool){
+        if(bool)
+            return "1";
+        return "0";
     }
 
     public boolean equals(Patient other) {
