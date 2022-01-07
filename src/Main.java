@@ -131,7 +131,7 @@ public class Main {
             best_anonymization = head;
             bestCost = c_optional;
         }
-        tail = mainPrune(head, tail, bestCost);
+        tail = prune(head,tail,bestCost);
         tail = reorderTail(head, tail);
 
         //iterate over all direct children of the parent node - head in order to find the best anonymization with the best cost
@@ -145,7 +145,7 @@ public class Main {
             Head new_head = new Head(new_anonymization, new_ec_list);
             bestCost = KOptimize(k, new_head, tail, bestCost);
             //if 'bestCost' have been changed following the previous call, then attempt to prune more values from the tail.
-            tail = mainPrune(head, tail, bestCost);
+            tail = prune(head, tail, bestCost);
 
         }
         return bestCost;
@@ -244,35 +244,28 @@ public class Main {
         return sum;
     }
 
-    public static List<Integer> mainPrune(Head head, List<Integer> tail, int best_cost) {
-        List<Integer> head_and_tail = prune(head, tail, best_cost);
-        List<Integer> head_and_tail_copy = new ArrayList<>(head_and_tail);
-        for (Integer value : head.getAnonymization()) {
-            if (head_and_tail_copy.contains(value)) {
-                head_and_tail_copy.remove(value);
-            }
-        }
-        return head_and_tail_copy;
-    }
-
     /*this function creates and returns a new tail set by removing values from T that can not
     lead to anonymization with cost lower than best_cost
     */
     public static List<Integer> prune(Head head, List<Integer> tail, int best_cost) {
-        if (tail.size() == 0 || computeLowerBound(head, tail) >= best_cost) {
-            return head.getAnonymization();
+        List <Integer> filtered_tail = new ArrayList<>();
+        List <Integer> tail_copy = new ArrayList<>(tail);
+        if(computeLowerBound(head, tail) >= best_cost){
+            return filtered_tail;
         }
-        List<Integer> value_list = new ArrayList<>();
-        int value = tail.remove(0);
-        value_list.add(value);
-        List<EquivalenceClass> new_ec_list = updateEquivalenceClasses(head, value_list);
-        List<Integer> new_anonymization = new ArrayList<>(head.getAnonymization());
-        new_anonymization.add(value);
-        Head new_head = new Head(new_anonymization, new_ec_list);
-        if (computeLowerBound(new_head, tail) >= best_cost) {
-            return prune(head, tail, best_cost);
+        for(Integer value:tail){
+            List<Integer> value_list = new ArrayList<>();
+            tail_copy.remove(0);
+            value_list.add(value);
+            List<EquivalenceClass> new_ec_list = updateEquivalenceClasses(head, value_list);
+            List<Integer> new_anonymization = new ArrayList<>(head.getAnonymization());
+            new_anonymization.add(value);
+            Head new_head = new Head(new_anonymization, new_ec_list);
+            if (computeLowerBound(new_head, tail) < best_cost) {
+                filtered_tail.add(value);
+            }
         }
-        return prune(new_head, tail, best_cost);
+        return filtered_tail;
     }
 
     //reorder the tail values  in a manner that vastly increases pruning opportunities.
