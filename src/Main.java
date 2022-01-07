@@ -259,7 +259,7 @@ public class Main {
     lead to anonymization with cost lower than best_cost
     */
     public static List<Integer> prune(Head head, List<Integer> tail, int best_cost) {
-        if (tail.size() == 0) {
+        if (tail.size() == 0 || computeLowerBound(head, tail) >= best_cost) {
             return head.getAnonymization();
         }
         List<Integer> value_list = new ArrayList<>();
