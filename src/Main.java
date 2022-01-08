@@ -65,16 +65,16 @@ public class Main {
         /*
            Indexes    |  Attribute
              0 - 1        gender
-              2 - 10       age
-            11 - 12       hypertension
-            13 - 14       heart disease
-            15 - 16       ever married
-            17 - 21       work type
-            22 - 23       residence type
-            24 - 30       avg glucose level
-            31 - 37       bmi
-            38 - 41       smoking status
-            42 - 43       stroke
+             2 - 4        age
+             5 - 6        hypertension
+             7- 8         heart disease
+             9- 10        ever married
+            11 - 15       work type
+            16 - 17       residence type
+            18 - 20       avg glucose level
+             21- 23       bmi
+            24 - 27       smoking status
+            28 - 29       stroke
 
          */
         mapValueToNumber = new Object[]{"Male", "Female"
@@ -297,15 +297,15 @@ public class Main {
         File file = new File(filePath);
         try {
             // create FileWriter object with file as parameter
-            FileWriter outputfile = new FileWriter(file);
+            FileWriter output_file = new FileWriter(file);
 
             // create CSVWriter object filewriter object as parameter
-            CSVWriter writer = new CSVWriter(outputfile);
+            CSVWriter writer = new CSVWriter(output_file);
 
-            // adding header to csv
-            String[] header = {"id", "gender", "age", "hypertension", "heart disease", "ever married", "work type", "residence type", "avg glucose level", "bmi", "smoking status", "stroke"};
-            writer.writeNext(header);
             for (EquivalenceClass ec : best_anonymization.getInducedEquivalenceClasses()) {
+                // adding header to csv
+                String[] header = {"id", "gender", "age", "hypertension", "heart disease", "ever married", "work type", "residence type", "avg glucose level", "bmi", "smoking status", "stroke"};
+                writer.writeNext(header);
                 Tuple t = ec.getTuple_list().get(0).getValue();
                 writer.writeNext(t.toStringArray(mapValueToNumber));
                 for (Pair<Patient, Tuple> tuple : ec.getTuple_list()) {

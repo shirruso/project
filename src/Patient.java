@@ -1,4 +1,3 @@
-import javafx.util.Pair;
 
 /*
 This class represent a record in the data set
